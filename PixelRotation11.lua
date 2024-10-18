@@ -10,7 +10,9 @@ frame.texture:SetAllPoints(true)
 frame.texture:SetColorTexture(1, 0, 0, 1) -- Red color with full opacity
 frame:Show()
 
-
+function SetFrameColorByTitle(title)
+  if title == "停手" Then return frame.texture:SetColorTexture(1, 1, 0, 1) end -- 停手是黄色
+end
 
 function are3EnemiesInRange()
    local inRange = 0
@@ -72,3 +74,14 @@ local function GetPlayerAuraCount(spellID)
   return count
 
 end --GetPlayerAuraCount
+
+function DoPixelRotation()
+
+  -- 如果不在战斗，则stop
+  if not UnitAffectingCombat("player") then
+    return SetFrameColorByTitle("停手")
+  end
+
+
+
+end
