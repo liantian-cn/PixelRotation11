@@ -21,77 +21,84 @@ f:RegisterEvent("UNIT_COMBAT")
 f:RegisterEvent("PLAYER_LEAVE_COMBAT")
 f:RegisterEvent("PLAYER_ENTER_COMBAT")
 
+local last_title = 0
 
 function SetFrameColorByTitle(title)
+
+    if last_title == title then
+      return
+    end
+    last_title = title1111
+
   if (title == "空白") then
     f.tex:SetColorTexture(1, 1, 1, 1)
-    text:SetText("空白")
+    --text:SetText("空白")
     return
   end
   --/script SetFrameColorByTitle("死神的抚摩")
   if (title == "死神的抚摩") then
     f.tex:SetColorTexture(0, 0, 0.5, 1)
-    text:SetText("死神的抚摩")
+    --text:SetText("死神的抚摩")
     return
   end
   --/script SetFrameColorByTitle("精髓分裂")
   if (title == "精髓分裂") then
     f.tex:SetColorTexture(0, 0, 1, 1)
-    text:SetText("精髓分裂")
+    --text:SetText("精髓分裂")
     return
   end
   --/script SetFrameColorByTitle("血液沸腾")
   if (title == "血液沸腾") then
     f.tex:SetColorTexture(0, 0.5, 0, 1)
-    text:SetText("血液沸腾")
+    --text:SetText("血液沸腾")
     return
   end
   --/script SetFrameColorByTitle("灵界打击")
   if (title == "灵界打击") then
     f.tex:SetColorTexture(0, 0.5, 0.5, 1)
-    text:SetText("灵界打击")
+    --text:SetText("灵界打击")
     return
   end
   --/script SetFrameColorByTitle("死神印记")
   if (title == "死神印记") then
     f.tex:SetColorTexture(0, 0.5, 1, 1)
-    text:SetText("死神印记")
+    --text:SetText("死神印记")
     return
   end
   --/script SetFrameColorByTitle("心脏打击")
   if (title == "心脏打击") then
     f.tex:SetColorTexture(0, 1, 0, 1)
-    text:SetText("心脏打击")
+    --text:SetText("心脏打击")
     return
   end
   --/script SetFrameColorByTitle("白骨风暴")
   if (title == "白骨风暴") then
     f.tex:SetColorTexture(0, 1, 0.5, 1)
-    text:SetText("白骨风暴")
+    --text:SetText("白骨风暴")
     return
   end
   --/script SetFrameColorByTitle("吸血鬼之血")
   if (title == "吸血鬼之血") then
     f.tex:SetColorTexture(0, 1, 1, 1)
-    text:SetText("吸血鬼之血")
+    --text:SetText("吸血鬼之血")
     return
   end
   --/script SetFrameColorByTitle("吞噬")
   if (title == "吞噬") then
     f.tex:SetColorTexture(1, 0, 0, 1)
-    text:SetText("吞噬")
+    --text:SetText("吞噬")
     return
   end
   --/script SetFrameColorByTitle("墓石")
   if (title == "墓石") then
     f.tex:SetColorTexture(1, 0, 0.5, 1)
-    text:SetText("墓石")
+    --text:SetText("墓石")
     return
   end
   --/script SetFrameColorByTitle("枯萎凋零")
   if (title == "枯萎凋零") then
     f.tex:SetColorTexture(1, 0, 1, 1)
-    text:SetText("枯萎凋零")
+    --text:SetText("枯萎凋零")
     return
   end
 end
@@ -219,17 +226,17 @@ local cooldown = 0.1
 
 
 function DoPixelRotation()
-  -- 获取当前时间
-  --  local currentTime = GetTime()
-  --
-  --  -- 检查当前时间与上次执行时间的差异
-  --  if currentTime - lastExecutionTime < cooldown then
-  --      -- 如果差异小于0.2秒，直接返回，不执行函数
-  --      return
-  --  end
-  --
-  --  -- 更新上次执行时间
-  --  lastExecutionTime = currentTime
+   --获取当前时间
+    local currentTime = GetTime()
+
+    -- 检查当前时间与上次执行时间的差异
+    if currentTime - lastExecutionTime < cooldown then
+        -- 如果差异小于0.2秒，直接返回，不执行函数
+        return
+    end
+
+    -- 更新上次执行时间
+    lastExecutionTime = currentTime
 
 
   -- 如果不在战斗，则stop
@@ -351,6 +358,14 @@ function DoPixelRotation()
   ---------            拉怪区域                                  ----
   ------------------------------------------------------------------
 
+    -- 如果能量大于105，使用灵界打击 49998
+
+  if runic_power > 105 then
+    if any_enemies_in_range then
+      return SetFrameColorByTitle("灵界打击")
+    end
+  end
+
   -- 如果近战范围敌人>3个，血沸有2层，则血液沸腾 50842。
   if are3EnemiesInRange() then
     if chargeInfo_50842.currentCharges >= 2 then
@@ -358,13 +373,7 @@ function DoPixelRotation()
     end
   end
 
-  -- 如果能量大于115，使用灵界打击 49998
 
-  if runic_power > 115 then
-    if any_enemies_in_range then
-      return SetFrameColorByTitle("灵界打击")
-    end
-  end
 
   -- 如果凋零有2层，且有赤色天灾buff，则释放凋零。
   -- 如果凋零有2层，符文大于2，则释放凋零。
