@@ -82,6 +82,10 @@ function DoPixelRotation()
     return SetFrameColorByTitle("停手")
   end
 
+  -- 如果没有骨盾，且死亡触摸在CD，则死亡触摸。
 
+  -- 如果近战范围有敌人，血沸有2层，则血沸。
+
+  -- 如果骨盾小于5层，
 
 end
