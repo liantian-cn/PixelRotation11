@@ -29,38 +29,58 @@ function SetFrameColorByTitle(title)
     return
   end
   if (title == "死神的抚摩") then
-    f.tex:SetColorTexture(0, 0, 0.25, 1)
+    f.tex:SetColorTexture(0, 0, 0.5, 1)
     text:SetText("死神的抚摩")
     return
   end
   if (title == "精髓分裂") then
-    f.tex:SetColorTexture(0, 0, 0.5, 1)
+    f.tex:SetColorTexture(0, 0, 1, 1)
     text:SetText("精髓分裂")
     return
   end
   if (title == "血液沸腾") then
-    f.tex:SetColorTexture(0, 0, 0.75, 1)
+    f.tex:SetColorTexture(0, 0.5, 0, 1)
     text:SetText("血液沸腾")
     return
   end
   if (title == "灵界打击") then
-    f.tex:SetColorTexture(0, 0, 1, 1)
+    f.tex:SetColorTexture(0, 0.5, 0.5, 1)
     text:SetText("灵界打击")
     return
   end
   if (title == "死神印记") then
-    f.tex:SetColorTexture(0, 0.25, 0, 1)
+    f.tex:SetColorTexture(0, 0.5, 1, 1)
     text:SetText("死神印记")
     return
   end
   if (title == "心脏打击") then
-    f.tex:SetColorTexture(0, 0.25, 0.25, 1)
+    f.tex:SetColorTexture(0, 1, 0, 1)
     text:SetText("心脏打击")
     return
   end
   if (title == "白骨风暴") then
-    f.tex:SetColorTexture(0, 0.25, 0.5, 1)
+    f.tex:SetColorTexture(0, 1, 0.5, 1)
     text:SetText("白骨风暴")
+    return
+  end
+  if (title == "吸血鬼之血") then
+    f.tex:SetColorTexture(0, 1, 1, 1)
+    text:SetText("吸血鬼之血")
+    return
+  end
+  if (title == "吞噬") then
+    f.tex:SetColorTexture(1, 0, 0, 1)
+    text:SetText("吞噬")
+    return
+  end
+  if (title == "墓石") then
+    f.tex:SetColorTexture(1, 0, 0.5, 1)
+    text:SetText("墓石")
+    return
+  end
+  if (title == "枯萎凋零") then
+    f.tex:SetColorTexture(1, 0, 1, 1)
+    text:SetText("枯萎凋零")
     return
   end
 end
@@ -119,6 +139,51 @@ end
 
 
 
+-- 计算符文数
+local function getRuneCount()
+  local amount = 0
+  for i = 1, 6 do
+      local start, duration, runeReady = GetRuneCooldown(i)
+      if runeReady then
+          amount = amount + 1
+      end
+  end
+  return amount
+end
+
+
+-- 80%减伤清单
+function get80DamageReduction()
+  local damage_spell_list = {
+    320655,   --通灵 凋骨
+    424888,   -- 宝库 老1
+    428711,   -- 宝库 老3
+    434722,   -- 千丝 老1
+    441298,   -- 千丝 老2
+    461842,   -- 千丝 老3
+    447261,   -- 拖把 老1
+    449444,   -- 拖把 老2
+    450100,   -- 拖把 老4
+    453212,   -- 破晨 老1
+    427001,   -- 破晨 老2
+    438471,   -- 回响 老1
+    8690           -- 炉石
+  }
+  local _, _, _, _, _, _, _, _, target_spellId = UnitCastingInfo("target")
+
+  if target_spellId == nil then
+    return false
+  end
+
+  for _, v in ipairs(damage_spell_list) do
+    if v == target_spellId then
+      return true
+    end
+  end
+  return false
+
+end
+
 function DoPixelRotation()
 
   -- 如果不在战斗，则stop
@@ -127,10 +192,46 @@ function DoPixelRotation()
   end
 
   -- 符文
-  local runes = UnitPower("player", Enum.PowerType.Runes)
+  local runes = getRuneCount()
   -- 符文能量
   local runic_power = UnitPower("player", Enum.PowerType.RunicPower)
 
+  -- 精髓分裂 195182
+  local inRange_195182  = C_Spell.IsSpellInRange(195182, "target")
+
+  -- 死神的抚摩 195292
+  local spellCooldownInfo_195292 = C_Spell.GetSpellCooldown(195292)
+
+  -- 骨盾 195181
+  local aura_195181 = C_UnitAuras.GetPlayerAuraBySpellID(195181)
+
+  -- 血液沸腾 50842
+  local chargeInfo_50842 = C_Spell.GetSpellCharges(50842)
+
+  -- 死神印记 439843
+  local spellCooldownInfo_439843 = C_Spell.GetSpellCooldown(439843)
+
+  -- 吸血鬼之血 55233
+  local spellCooldownInfo_55233 = C_Spell.GetSpellCooldown(55233)
+
+  -- 白骨风暴 194844
+  local spellCooldownInfo_194844 = C_Spell.GetSpellCooldown(194844)
+
+  -- 墓石219809
+  local spellCooldownInfo_219809 = C_Spell.GetSpellCooldown(219809)
+
+  -- 凝血 463730，applications为可回复百分比
+  local aura_463730 = C_UnitAuras.GetPlayerAuraBySpellID(463730)
+
+  -- 赤色天灾 81141，applications为可回复百分比
+  local aura_81141 = C_UnitAuras.GetPlayerAuraBySpellID(81141)
+  -- 凋零buff
+  local aura_188290 = C_UnitAuras.GetPlayerAuraBySpellID(188290)
+  -- 凋零CD
+  local chargeInfo_43265 = C_Spell.GetSpellCharges(43265)
+  ------------------------------------------------------------------
+  ---------            基础覆盖                                     ----
+  ------------------------------------------------------------------
 
   -- 打骨盾
   -- 骨盾ID 195181
@@ -140,14 +241,12 @@ function DoPixelRotation()
   --   否则 使用 精髓分裂  195182
   -- 且死亡触摸在CD，则死亡触摸。
   if (GetPlayerAuraCount(195181) < 3) then
-    local spellCooldownInfo = C_Spell.GetSpellCooldown(195292)
-    local inRange  = C_Spell.IsSpellInRange(195182, "target")
 
-    if (spellCooldownInfo.duration == 0) and (runes < 3) then
+    if (spellCooldownInfo_195292.duration == 0) and (runes < 3) then
       return SetFrameColorByTitle("死神的抚摩")
     end
 
-    if (spellCooldownInfo.duration == 0) and (not inRange) then
+    if (spellCooldownInfo_195292.duration == 0) and (not inRange_195182) then
       return SetFrameColorByTitle("死神的抚摩")
     end
 
@@ -155,11 +254,47 @@ function DoPixelRotation()
   end
 
 
+  -- 如果骨盾的CD小于8秒，符文>2个
+  -- 则使用精髓分裂 195182。
+  if aura_195181 then
+    if (aura_195181.expirationTime - GetTime()) < 8 and runes > 2 then
+      if (spellCooldownInfo_195292.duration == 0) and (not inRange_195182) then
+        return SetFrameColorByTitle("死神的抚摩")
+      end
+      return SetFrameColorByTitle("精髓分裂")
+    end
+  end
+
+  ------------------------------------------------------------------
+  ---------            减伤   和打断                              ----
+  ------------------------------------------------------------------
+
+
+  -- 如果有能量，血量少于50%，释放灵打。
+  if runic_power > 40 then
+    if ( UnitHealth("player")/UnitHealthMax("player")) < 0.5 then
+        return SetFrameColorByTitle("灵界打击")
+    end
+  end
+
+  -- 目标在释放以下技能，则低于80%血就灵打。
+
+  if runic_power > 40 then
+    if ( UnitHealth("player")/UnitHealthMax("player")) < 0.8 then
+      if get80DamageReduction() then
+        return SetFrameColorByTitle("灵界打击")
+      end
+    end
+  end
+
+
+  ------------------------------------------------------------------
+  ---------            拉怪区域                                  ----
+  ------------------------------------------------------------------
 
   -- 如果近战范围敌人>3个，血沸有2层，则血液沸腾 50842。
-  if are3EnemiesInRange then
-    local chargeInfo = C_Spell.GetSpellCharges(50842)
-    if chargeInfo.currentCharges >= 2 then
+  if are3EnemiesInRange() then
+    if chargeInfo_50842.currentCharges >= 2 then
       return SetFrameColorByTitle("血液沸腾")
     end
   end
@@ -170,27 +305,58 @@ function DoPixelRotation()
     return SetFrameColorByTitle("灵界打击")
   end
 
+  -- 如果凋零有2层，且有赤色天灾buff，则释放凋零。
+  if aura_81141 and (chargeInfo_43265.currentCharges > 1 ) then
+    return SetFrameColorByTitle("枯萎凋零")
+  end
+
+
   -- 如果目标生命值大于80%，且符文大于2个，使用死神印记在冷却 439843
   if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
-    local spellCooldownInfo = C_Spell.GetSpellCooldown(439843)
-
-    if (spellCooldownInfo.duration == 0) and (runes > 3) then
+    if (spellCooldownInfo_439843.duration == 0) and (runes > 3) then
       return SetFrameColorByTitle("死神印记")
     end
   end
 
+  -- 如果目标生命值大于80%，吸血鬼在冷却，使用吸血鬼之血 55233
+  if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
 
-  -- 如果身边有5个敌人，白骨风暴在冷却，骨盾有10层，则白骨风暴 194844
-  if are5EnemiesInRange() then
-    local spellCooldownInfo = C_Spell.GetSpellCooldown(194844)
-    if (spellCooldownInfo.duration == 0) and (GetPlayerAuraCount(195181) >= 10) then
-      return SetFrameColorByTitle("白骨风暴")
+
+    if (spellCooldownInfo_55233.duration == 0)  then
+      return SetFrameColorByTitle("吸血鬼之血")
+    end
+  end
+
+  -- 如果有吸血鬼的55233 buff，且吞噬在冷却，且符文小4个，则使用吞噬 274156
+  local aura_55233 = C_UnitAuras.GetPlayerAuraBySpellID(55233)
+  if aura_55233 then
+    local spellCooldownInfo = C_Spell.GetSpellCooldown(274156)
+    if (spellCooldownInfo.duration == 0) and (runes < 4) then
+      return SetFrameColorByTitle("吞噬")
     end
   end
 
 
-  -- 如果符文大于等于2个，则使用心脏打击206930。
-  if runes >= 2 then
+  -- 如果身边有5个敌人，白骨风暴在冷却，骨盾有8层，则白骨风暴 194844
+  if are5EnemiesInRange() then
+    if (spellCooldownInfo_194844.duration == 0) and (GetPlayerAuraCount(195181) >= 8) then
+      return SetFrameColorByTitle("白骨风暴")
+    end
+  end
+
+    -- 如果墓石219809在冷却，骨盾有8层，能量小于100，则墓石219809
+  if (spellCooldownInfo_219809.duration == 0) and (GetPlayerAuraCount(195181) >= 8) and (runic_power<100)then
+    return SetFrameColorByTitle("墓石")
+  end
+
+
+  -- 如果白骨之盾少于10层，符文大于3个，则使用精髓分裂 195182
+  if (GetPlayerAuraCount(195181) < 10) and (runes >= 3) then
+    return SetFrameColorByTitle("精髓分裂")
+  end
+
+  -- 如果如果白骨之盾大于层，符文大于等于2个，则使用心脏打击206930。
+  if (GetPlayerAuraCount(195181) >= 10) and (runes >= 2) then
     return SetFrameColorByTitle("心脏打击")
   end
 
