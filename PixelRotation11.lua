@@ -5,9 +5,6 @@ local f = CreateFrame("Frame", nil, UIParent)
 --f:SetPoint("CENTER")
 f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0) -- 设置到左上角
 f:SetSize(64, 64)
-f:RegisterEvent("UNIT_COMBAT")
-f:RegisterEvent("PLAYER_LEAVE_COMBAT")
-f:RegisterEvent("PLAYER_ENTER_COMBAT")
 
 f.tex = f:CreateTexture()
 f.tex:SetAllPoints()
@@ -20,6 +17,9 @@ local text = textBox:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 text:SetPoint("LEFT", textBox, "LEFT", 0, 0)
 text:SetFont("Fonts\\FRIZQT__.TTF", 32, nil)
 --text:SetText("这是一个文本框")
+f:RegisterEvent("UNIT_COMBAT")
+f:RegisterEvent("PLAYER_LEAVE_COMBAT")
+f:RegisterEvent("PLAYER_ENTER_COMBAT")
 
 
 function SetFrameColorByTitle(title)
@@ -28,56 +28,67 @@ function SetFrameColorByTitle(title)
     text:SetText("空白")
     return
   end
+  --/script SetFrameColorByTitle("死神的抚摩")
   if (title == "死神的抚摩") then
     f.tex:SetColorTexture(0, 0, 0.5, 1)
     text:SetText("死神的抚摩")
     return
   end
+  --/script SetFrameColorByTitle("精髓分裂")
   if (title == "精髓分裂") then
     f.tex:SetColorTexture(0, 0, 1, 1)
     text:SetText("精髓分裂")
     return
   end
+  --/script SetFrameColorByTitle("血液沸腾")
   if (title == "血液沸腾") then
     f.tex:SetColorTexture(0, 0.5, 0, 1)
     text:SetText("血液沸腾")
     return
   end
+  --/script SetFrameColorByTitle("灵界打击")
   if (title == "灵界打击") then
     f.tex:SetColorTexture(0, 0.5, 0.5, 1)
     text:SetText("灵界打击")
     return
   end
+  --/script SetFrameColorByTitle("死神印记")
   if (title == "死神印记") then
     f.tex:SetColorTexture(0, 0.5, 1, 1)
     text:SetText("死神印记")
     return
   end
+  --/script SetFrameColorByTitle("心脏打击")
   if (title == "心脏打击") then
     f.tex:SetColorTexture(0, 1, 0, 1)
     text:SetText("心脏打击")
     return
   end
+  --/script SetFrameColorByTitle("白骨风暴")
   if (title == "白骨风暴") then
     f.tex:SetColorTexture(0, 1, 0.5, 1)
     text:SetText("白骨风暴")
     return
   end
+  --/script SetFrameColorByTitle("吸血鬼之血")
   if (title == "吸血鬼之血") then
     f.tex:SetColorTexture(0, 1, 1, 1)
     text:SetText("吸血鬼之血")
     return
   end
+  --/script SetFrameColorByTitle("吞噬")
   if (title == "吞噬") then
     f.tex:SetColorTexture(1, 0, 0, 1)
     text:SetText("吞噬")
     return
   end
+  --/script SetFrameColorByTitle("墓石")
   if (title == "墓石") then
     f.tex:SetColorTexture(1, 0, 0.5, 1)
     text:SetText("墓石")
     return
   end
+  --/script SetFrameColorByTitle("枯萎凋零")
   if (title == "枯萎凋零") then
     f.tex:SetColorTexture(1, 0, 1, 1)
     text:SetText("枯萎凋零")
@@ -85,7 +96,7 @@ function SetFrameColorByTitle(title)
   end
 end
 
--- /script SetFrameColorByTitle("空白")
+--
 -- /script SetFrameColorByTitle("停手")
 
 local function GetPlayerAuraCount(spellID)
@@ -137,6 +148,15 @@ local function are5EnemiesInRange()
     end
 end
 
+local function AnyEnemiesInRange()
+    local unitID = 0
+    for _, plate in pairs(C_NamePlate.GetNamePlates()) do
+        unitID = plate.namePlateUnitToken
+        if UnitCanAttack("player", unitID) and C_Spell.IsSpellInRange(49998, unitID) then
+            return true
+        end
+    end
+end
 
 
 -- 计算符文数
@@ -184,7 +204,33 @@ function get80DamageReduction()
 
 end
 
+--详细说明
+--lastExecutionTime：记录上次函数执行的时间，初始化为0。
+--cooldown：设置函数的调用冷却时间为0.2秒。
+--GetTime()：获取当前游戏时间，从游戏启动到现在的秒数。
+--ProtectedFunction()：
+--获取当前时间currentTime。
+--检查当前时间与上次执行时间lastExecutionTime的差异。如果差异小于冷却时间0.2秒，则直接返回，不执行函数。
+--如果差异大于或等于冷却时间，更新上次执行时间lastExecutionTime为当前时间currentTime。
+--执行函数的实际内容。
+
+local lastExecutionTime = 0
+local cooldown = 0.1
+
+
 function DoPixelRotation()
+  -- 获取当前时间
+  --  local currentTime = GetTime()
+  --
+  --  -- 检查当前时间与上次执行时间的差异
+  --  if currentTime - lastExecutionTime < cooldown then
+  --      -- 如果差异小于0.2秒，直接返回，不执行函数
+  --      return
+  --  end
+  --
+  --  -- 更新上次执行时间
+  --  lastExecutionTime = currentTime
+
 
   -- 如果不在战斗，则stop
   if not UnitAffectingCombat("player") then
@@ -195,6 +241,10 @@ function DoPixelRotation()
   local runes = getRuneCount()
   -- 符文能量
   local runic_power = UnitPower("player", Enum.PowerType.RunicPower)
+
+  -- 近战有敌人
+
+  local any_enemies_in_range = AnyEnemiesInRange()
 
   -- 精髓分裂 195182
   local inRange_195182  = C_Spell.IsSpellInRange(195182, "target")
@@ -250,7 +300,9 @@ function DoPixelRotation()
       return SetFrameColorByTitle("死神的抚摩")
     end
 
-    return SetFrameColorByTitle("精髓分裂")
+    if any_enemies_in_range then
+      return SetFrameColorByTitle("精髓分裂")
+    end
   end
 
 
@@ -261,7 +313,9 @@ function DoPixelRotation()
       if (spellCooldownInfo_195292.duration == 0) and (not inRange_195182) then
         return SetFrameColorByTitle("死神的抚摩")
       end
-      return SetFrameColorByTitle("精髓分裂")
+      if any_enemies_in_range then
+        return SetFrameColorByTitle("精髓分裂")
+      end
     end
   end
 
@@ -273,7 +327,10 @@ function DoPixelRotation()
   -- 如果有能量，血量少于50%，释放灵打。
   if runic_power > 40 then
     if ( UnitHealth("player")/UnitHealthMax("player")) < 0.5 then
+
+      if any_enemies_in_range then
         return SetFrameColorByTitle("灵界打击")
+      end
     end
   end
 
@@ -282,7 +339,9 @@ function DoPixelRotation()
   if runic_power > 40 then
     if ( UnitHealth("player")/UnitHealthMax("player")) < 0.8 then
       if get80DamageReduction() then
-        return SetFrameColorByTitle("灵界打击")
+        if any_enemies_in_range then
+          return SetFrameColorByTitle("灵界打击")
+        end
       end
     end
   end
@@ -302,28 +361,40 @@ function DoPixelRotation()
   -- 如果能量大于115，使用灵界打击 49998
 
   if runic_power > 115 then
-    return SetFrameColorByTitle("灵界打击")
+    if any_enemies_in_range then
+      return SetFrameColorByTitle("灵界打击")
+    end
   end
 
   -- 如果凋零有2层，且有赤色天灾buff，则释放凋零。
-  if aura_81141 and (chargeInfo_43265.currentCharges > 1 ) then
-    return SetFrameColorByTitle("枯萎凋零")
+  -- 如果凋零有2层，符文大于2，则释放凋零。
+  if  (chargeInfo_43265.currentCharges > 1 ) then
+    if aura_81141 then
+      return SetFrameColorByTitle("枯萎凋零")
+    end
+    if runes > 2 then
+      return SetFrameColorByTitle("枯萎凋零")
+    end
   end
 
 
   -- 如果目标生命值大于80%，且符文大于2个，使用死神印记在冷却 439843
   if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
     if (spellCooldownInfo_439843.duration == 0) and (runes > 3) then
-      return SetFrameColorByTitle("死神印记")
+      if C_Spell.IsSpellInRange(439843, "target") then
+        return SetFrameColorByTitle("死神印记")
+      end
     end
   end
 
+
   -- 如果目标生命值大于80%，吸血鬼在冷却，使用吸血鬼之血 55233
+
   if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
-
-
     if (spellCooldownInfo_55233.duration == 0)  then
-      return SetFrameColorByTitle("吸血鬼之血")
+      if any_enemies_in_range then
+        return SetFrameColorByTitle("吸血鬼之血")
+      end
     end
   end
 
@@ -332,7 +403,9 @@ function DoPixelRotation()
   if aura_55233 then
     local spellCooldownInfo = C_Spell.GetSpellCooldown(274156)
     if (spellCooldownInfo.duration == 0) and (runes < 4) then
-      return SetFrameColorByTitle("吞噬")
+      if any_enemies_in_range then
+        return SetFrameColorByTitle("吞噬")
+      end
     end
   end
 
@@ -352,12 +425,17 @@ function DoPixelRotation()
 
   -- 如果白骨之盾少于10层，符文大于3个，则使用精髓分裂 195182
   if (GetPlayerAuraCount(195181) < 10) and (runes >= 3) then
-    return SetFrameColorByTitle("精髓分裂")
+    if any_enemies_in_range then
+      return SetFrameColorByTitle("精髓分裂")
+    end
+
   end
 
   -- 如果如果白骨之盾大于层，符文大于等于2个，则使用心脏打击206930。
   if (GetPlayerAuraCount(195181) >= 10) and (runes >= 2) then
-    return SetFrameColorByTitle("心脏打击")
+    if any_enemies_in_range then
+      return SetFrameColorByTitle("心脏打击")
+    end
   end
 
   return SetFrameColorByTitle("空白")
