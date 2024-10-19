@@ -3,6 +3,7 @@ import random
 import dxcam
 from PIL import Image
 import pyautogui
+import keyboard
 
 dx_camera = dxcam.create(device_idx=0, output_idx=0, output_color="RGB")
 
@@ -10,7 +11,28 @@ region = (0, 0, 32, 32)
 
 dx_camera.start(region=region, video_mode=True, target_fps=120)
 
+# 标志变量
+continue_loop = False
+
+
+def star_loop():
+    global continue_loop
+    continue_loop = True
+
+
+def stop_loop():
+    global continue_loop
+    continue_loop = False
+
+
+keyboard.add_hotkey('alt+q', star_loop)
+keyboard.add_hotkey('alt+e', stop_loop)
+
 while True:
+    time.sleep(random.uniform(0.1, 0.3))
+    if not continue_loop:
+
+        continue
     frame = dx_camera.get_latest_frame()
     img = Image.fromarray(frame)
     pixel_color = img.getpixel((16, 16))
@@ -52,5 +74,4 @@ while True:
     elif pixel_color == (255, 0, 255):
         print("枯萎凋零")
         pyautogui.press("subtract")
-    # print(pixel_color)
-    time.sleep(random.uniform(0.1, 0.3))
+
