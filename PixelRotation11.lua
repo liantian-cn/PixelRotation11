@@ -55,7 +55,7 @@ function SetFrameColorByTitle(title)
     if last_title == title then
       return
     end
-    last_title = title1111
+    last_title = title
 
   if (title == "空白") then
     f.tex:SetColorTexture(1, 1, 1, 1)
@@ -253,17 +253,17 @@ local cooldown = 0.1
 
 
 function DoPixelRotation()
-   --获取当前时间
-    local currentTime = GetTime()
-
-    -- 检查当前时间与上次执行时间的差异
-    if currentTime - lastExecutionTime < cooldown then
-        -- 如果差异小于0.2秒，直接返回，不执行函数
-        return
-    end
-
-    -- 更新上次执行时间
-    lastExecutionTime = currentTime
+   ----获取当前时间
+   -- local currentTime = GetTime()
+   --
+   -- -- 检查当前时间与上次执行时间的差异
+   -- if currentTime - lastExecutionTime < cooldown then
+   --     -- 如果差异小于0.2秒，直接返回，不执行函数
+   --     return
+   -- end
+   --
+   -- -- 更新上次执行时间
+   -- lastExecutionTime = currentTime
 
 
   -- 如果不在战斗，则stop
@@ -334,9 +334,7 @@ function DoPixelRotation()
       return SetFrameColorByTitle("死神的抚摩")
     end
 
-    if any_enemies_in_range then
-      return SetFrameColorByTitle("精髓分裂")
-    end
+    return SetFrameColorByTitle("精髓分裂")
   end
 
 
@@ -347,9 +345,9 @@ function DoPixelRotation()
       if (spellCooldownInfo_195292.duration == 0) and (not inRange_195182) then
         return SetFrameColorByTitle("死神的抚摩")
       end
-      if any_enemies_in_range then
-        return SetFrameColorByTitle("精髓分裂")
-      end
+
+      return SetFrameColorByTitle("精髓分裂")
+
     end
   end
 
@@ -361,10 +359,7 @@ function DoPixelRotation()
   -- 如果有能量，血量少于50%，释放灵打。
   if runic_power > 40 then
     if ( UnitHealth("player")/UnitHealthMax("player")) < 0.5 then
-
-      if any_enemies_in_range then
-        return SetFrameColorByTitle("灵界打击")
-      end
+      return SetFrameColorByTitle("灵界打击")
     end
   end
 
@@ -373,9 +368,7 @@ function DoPixelRotation()
   if runic_power > 40 then
     if ( UnitHealth("player")/UnitHealthMax("player")) < 0.8 then
       if get80DamageReduction() then
-        if any_enemies_in_range then
-          return SetFrameColorByTitle("灵界打击")
-        end
+        return SetFrameColorByTitle("灵界打击")
       end
     end
   end
@@ -388,17 +381,15 @@ function DoPixelRotation()
   -- 如果能量大于105，使用灵界打击 49998
 
   if runic_power > 105 then
-    if any_enemies_in_range then
-      return SetFrameColorByTitle("灵界打击")
-    end
+    return SetFrameColorByTitle("灵界打击")
   end
 
-  -- 如果近战范围敌人>3个，血沸有2层，则血液沸腾 50842。
-  if are3EnemiesInRange() then
-    if chargeInfo_50842.currentCharges >= 2 then
+  -- 如果近战范围敌人>3个，血沸有1层，则血液沸腾 50842。
+  --if are3EnemiesInRange() then
+    if (chargeInfo_50842.currentCharges >= 2) and inRange_195182 then
       return SetFrameColorByTitle("血液沸腾")
     end
-  end
+  --end
 
 
   -- 如果凋零有2层，且有赤色天灾buff，则释放凋零。
@@ -414,13 +405,13 @@ function DoPixelRotation()
 
 
   -- 如果目标生命值大于80%，且符文大于2个，使用死神印记在冷却 439843
-  if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
-    if (spellCooldownInfo_439843.duration == 0) and (runes > 3) then
+  --if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
+    if (spellCooldownInfo_439843.duration == 0) and (runes > 2) then
       if C_Spell.IsSpellInRange(439843, "target") then
         return SetFrameColorByTitle("死神印记")
       end
     end
-  end
+  --end
 
 
   -- 如果目标生命值大于80%，吸血鬼在冷却，使用吸血鬼之血 55233
@@ -460,17 +451,12 @@ function DoPixelRotation()
 
   -- 如果白骨之盾少于10层，符文大于3个，则使用精髓分裂 195182
   if (GetPlayerAuraCount(195181) < 10) and (runes >= 3) then
-    if any_enemies_in_range then
       return SetFrameColorByTitle("精髓分裂")
-    end
-
   end
 
   -- 如果如果白骨之盾大于层，符文大于等于2个，则使用心脏打击206930。
   if (GetPlayerAuraCount(195181) >= 10) and (runes >= 2) then
-    if any_enemies_in_range then
       return SetFrameColorByTitle("心脏打击")
-    end
   end
 
   return SetFrameColorByTitle("空白")
