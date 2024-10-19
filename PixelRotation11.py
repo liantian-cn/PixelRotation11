@@ -12,15 +12,17 @@ region = (0, 0, 32, 32)
 dx_camera.start(region=region, video_mode=True, target_fps=120)
 
 # 标志变量
-continue_loop = False
+continue_loop = True
 
 
 def star_loop():
+    print("开始")
     global continue_loop
     continue_loop = True
 
 
 def stop_loop():
+    print("停止")
     global continue_loop
     continue_loop = False
 
