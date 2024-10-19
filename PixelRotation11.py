@@ -53,5 +53,4 @@ while True:
         print("枯萎凋零")
         pyautogui.press("subtract")
     # print(pixel_color)
-    time.sleep(random.uniform(0.2, 0.3))
-1
+    time.sleep(random.uniform(0.1, 0.3))

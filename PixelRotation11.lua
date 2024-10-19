@@ -8,7 +8,7 @@ f:SetSize(64, 64)
 
 f.tex = f:CreateTexture()
 f.tex:SetAllPoints()
-f.tex:SetColorTexture(0, 0, 0, 1)
+--f.tex:SetColorTexture(0, 0, 0, 1)
 
 local textBox = CreateFrame("Frame", nil, UIParent)
 textBox:SetPoint("TOPLEFT", f, "TOPRIGHT", 0, 0) -- 放置在图标右侧
@@ -21,6 +21,33 @@ f:RegisterEvent("UNIT_COMBAT")
 f:RegisterEvent("PLAYER_LEAVE_COMBAT")
 f:RegisterEvent("PLAYER_ENTER_COMBAT")
 
+f:RegisterEvent("CHAT_MSG_ADDON")
+f:RegisterEvent("PLAYER_STARTED_MOVING")
+f:RegisterEvent("PLAYER_STOPPED_MOVING")
+f:RegisterEvent("PLAYER_TOTEM_UPDATE")
+f:RegisterEvent("UNIT_AURA")
+f:RegisterEvent("UNIT_SPELLCAST_START")
+f:RegisterEvent("UNIT_SPELLCAST_SENT")
+f:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+f:RegisterEvent("UNIT_SPELLCAST_FAILED")
+f:RegisterEvent("UNIT_SPELLCAST_STOP")
+f:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
+f:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+f:RegisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE")
+f:RegisterEvent("UNIT_SPELLCAST_EMPOWER_START")
+f:RegisterEvent("UNIT_SPELLCAST_EMPOWER_STOP")
+f:RegisterEvent("UNIT_SPELLCAST_EMPOWER_UPDATE")
+f:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+f:RegisterEvent("UNIT_POWER_UPDATE")
+f:RegisterEvent("ENCOUNTER_START")
+f:RegisterEvent("ENCOUNTER_END")
+f:RegisterUnitEvent("AZERITE_EMPOWERED_ITEM_SELECTION_UPDATED")
+f:RegisterUnitEvent("AZERITE_ESSENCE_ACTIVATED")
+f:RegisterUnitEvent("PLAYER_EQUIPMENT_CHANGED")
+f:RegisterUnitEvent("TRAIT_CONFIG_UPDATED")
+f:RegisterUnitEvent("UI_ERROR_MESSAGE")
+f:RegisterEvent("LOADING_SCREEN_ENABLED")
+f:RegisterEvent("LOADING_SCREEN_DISABLED")
 local last_title = 0
 
 function SetFrameColorByTitle(title)
@@ -32,73 +59,73 @@ function SetFrameColorByTitle(title)
 
   if (title == "空白") then
     f.tex:SetColorTexture(1, 1, 1, 1)
-    --text:SetText("空白")
+    text:SetText("空白")
     return
   end
   --/script SetFrameColorByTitle("死神的抚摩")
   if (title == "死神的抚摩") then
     f.tex:SetColorTexture(0, 0, 0.5, 1)
-    --text:SetText("死神的抚摩")
+    text:SetText("死神的抚摩")
     return
   end
   --/script SetFrameColorByTitle("精髓分裂")
   if (title == "精髓分裂") then
     f.tex:SetColorTexture(0, 0, 1, 1)
-    --text:SetText("精髓分裂")
+    text:SetText("精髓分裂")
     return
   end
   --/script SetFrameColorByTitle("血液沸腾")
   if (title == "血液沸腾") then
     f.tex:SetColorTexture(0, 0.5, 0, 1)
-    --text:SetText("血液沸腾")
+    text:SetText("血液沸腾")
     return
   end
   --/script SetFrameColorByTitle("灵界打击")
   if (title == "灵界打击") then
     f.tex:SetColorTexture(0, 0.5, 0.5, 1)
-    --text:SetText("灵界打击")
+    text:SetText("灵界打击")
     return
   end
   --/script SetFrameColorByTitle("死神印记")
   if (title == "死神印记") then
     f.tex:SetColorTexture(0, 0.5, 1, 1)
-    --text:SetText("死神印记")
+    text:SetText("死神印记")
     return
   end
   --/script SetFrameColorByTitle("心脏打击")
   if (title == "心脏打击") then
     f.tex:SetColorTexture(0, 1, 0, 1)
-    --text:SetText("心脏打击")
+    text:SetText("心脏打击")
     return
   end
   --/script SetFrameColorByTitle("白骨风暴")
   if (title == "白骨风暴") then
     f.tex:SetColorTexture(0, 1, 0.5, 1)
-    --text:SetText("白骨风暴")
+    text:SetText("白骨风暴")
     return
   end
   --/script SetFrameColorByTitle("吸血鬼之血")
   if (title == "吸血鬼之血") then
     f.tex:SetColorTexture(0, 1, 1, 1)
-    --text:SetText("吸血鬼之血")
+    text:SetText("吸血鬼之血")
     return
   end
   --/script SetFrameColorByTitle("吞噬")
   if (title == "吞噬") then
     f.tex:SetColorTexture(1, 0, 0, 1)
-    --text:SetText("吞噬")
+    text:SetText("吞噬")
     return
   end
   --/script SetFrameColorByTitle("墓石")
   if (title == "墓石") then
     f.tex:SetColorTexture(1, 0, 0.5, 1)
-    --text:SetText("墓石")
+    text:SetText("墓石")
     return
   end
   --/script SetFrameColorByTitle("枯萎凋零")
   if (title == "枯萎凋零") then
     f.tex:SetColorTexture(1, 0, 1, 1)
-    --text:SetText("枯萎凋零")
+    text:SetText("枯萎凋零")
     return
   end
 end
@@ -358,7 +385,7 @@ function DoPixelRotation()
   ---------            拉怪区域                                  ----
   ------------------------------------------------------------------
 
-    -- 如果能量大于105，使用灵界打击 49998
+  -- 如果能量大于105，使用灵界打击 49998
 
   if runic_power > 105 then
     if any_enemies_in_range then
@@ -372,7 +399,6 @@ function DoPixelRotation()
       return SetFrameColorByTitle("血液沸腾")
     end
   end
-
 
 
   -- 如果凋零有2层，且有赤色天灾buff，则释放凋零。
