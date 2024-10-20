@@ -26,6 +26,7 @@ f:RegisterEvent("PLAYER_STARTED_MOVING")
 f:RegisterEvent("PLAYER_STOPPED_MOVING")
 f:RegisterEvent("PLAYER_TOTEM_UPDATE")
 f:RegisterEvent("UNIT_AURA")
+f:RegisterEvent("UNIT_HEALTH")
 f:RegisterEvent("UNIT_SPELLCAST_START")
 f:RegisterEvent("UNIT_SPELLCAST_SENT")
 f:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
@@ -50,7 +51,7 @@ f:RegisterEvent("LOADING_SCREEN_ENABLED")
 f:RegisterEvent("LOADING_SCREEN_DISABLED")
 local last_title = 0
 
-function SetFrameColorByTitle(title)
+local function SetFrameColorByTitle(title)
 
     if last_title == title then
       return
@@ -60,6 +61,11 @@ function SetFrameColorByTitle(title)
   if (title == "空白") then
     f.tex:SetColorTexture(1, 1, 1, 1)
     text:SetText("空白")
+    return
+  end
+  if (title == "不在战斗") then
+    f.tex:SetColorTexture(1, 1, 1, 1)
+    text:SetText("不在战斗")
     return
   end
   --/script SetFrameColorByTitle("死神的抚摩")
@@ -72,6 +78,11 @@ function SetFrameColorByTitle(title)
   if (title == "精髓分裂") then
     f.tex:SetColorTexture(0, 0, 1, 1)
     text:SetText("精髓分裂")
+    return
+  end
+    if (title == "精髓分裂-延续") then
+    f.tex:SetColorTexture(0, 0, 1, 1)
+    text:SetText("精髓分裂-延续")
     return
   end
   --/script SetFrameColorByTitle("血液沸腾")
@@ -128,6 +139,11 @@ function SetFrameColorByTitle(title)
     text:SetText("枯萎凋零")
     return
   end
+  if (title == "心灵冰冻") then
+    f.tex:SetColorTexture(1, 0.5, 0, 1)
+    text:SetText("心灵冰冻")
+    return
+  end
 end
 
 --
@@ -159,39 +175,16 @@ local function GetPlayerAuraCount(spellID)
   
 end --GetPlayerAuraCount
 
-
-local function are3EnemiesInRange()
-    local inRange, unitID = 0
-    for _, plate in pairs(C_NamePlate.GetNamePlates()) do
-        unitID = plate.namePlateUnitToken
-        if UnitCanAttack("player", unitID) and IsItemInRange(32321, unitID) then
-            inRange = inRange + 1
-            if inRange >= 3 then return true end
-        end
+local function EnemiesInRangeCount()
+  local inRange, unitID = 0
+  for _, plate in pairs(C_NamePlate.GetNamePlates()) do
+    unitID = plate.namePlateUnitToken
+    if UnitCanAttack("player", unitID) and C_Item.IsItemInRange(34368, unitID) then
+      inRange = inRange + 1
     end
+  end
+  return inRange
 end
-
-local function are5EnemiesInRange()
-    local inRange, unitID = 0
-    for _, plate in pairs(C_NamePlate.GetNamePlates()) do
-        unitID = plate.namePlateUnitToken
-        if UnitCanAttack("player", unitID) and IsItemInRange(32321, unitID) then
-            inRange = inRange + 1
-            if inRange >= 5 then return true end
-        end
-    end
-end
-
-local function AnyEnemiesInRange()
-    local unitID = 0
-    for _, plate in pairs(C_NamePlate.GetNamePlates()) do
-        unitID = plate.namePlateUnitToken
-        if UnitCanAttack("player", unitID) and C_Spell.IsSpellInRange(49998, unitID) then
-            return true
-        end
-    end
-end
-
 
 -- 计算符文数
 local function getRuneCount()
@@ -207,7 +200,7 @@ end
 
 
 -- 80%减伤清单
-function get80DamageReduction()
+local function get80DamageReduction()
   local damage_spell_list = {
     320655,   --通灵 凋骨
     424888,   -- 宝库 老1
@@ -238,37 +231,118 @@ function get80DamageReduction()
 
 end
 
---详细说明
---lastExecutionTime：记录上次函数执行的时间，初始化为0。
---cooldown：设置函数的调用冷却时间为0.2秒。
---GetTime()：获取当前游戏时间，从游戏启动到现在的秒数。
---ProtectedFunction()：
---获取当前时间currentTime。
---检查当前时间与上次执行时间lastExecutionTime的差异。如果差异小于冷却时间0.2秒，则直接返回，不执行函数。
---如果差异大于或等于冷却时间，更新上次执行时间lastExecutionTime为当前时间currentTime。
---执行函数的实际内容。
+-- 打断黑名单
+local interrupt_block_list = {
+  320655,   --通灵 凋骨
+}
 
-local lastExecutionTime = 0
-local cooldown = 0.1
+-- 打断优先名单
+local interrupt_priority_list = {
+  322938,    -- 仙林,收割精魂
+  324776,    -- 仙林,木棘外壳
+  324914,    -- 仙林,滋养森林
+  321828,    -- 仙林,拍手手
+  326046,    -- 仙林,模拟抗性
+  340544,    -- 仙林,再生鼓舞
+  443430,    -- 千丝之城, 流丝缠缚
+  443443,    -- 千丝之城, 扭曲思绪
+  446086,    -- 千丝之城, 虚空之波
+  434793,    -- 回响之城, 共振弹幕
+  434802,    -- 回响之城, 惊惧尖鸣
+  448248,    -- 回响之城, 恶臭齐射
+  451871,    -- 格瑞姆巴托,剧烈震颤
+  76711,     -- 格瑞姆巴托,灼烧心智
+  451224,    -- 格瑞姆巴托,暗影烈焰笼罩
+  431309,    -- 破晨号,诱捕暗影
+  450756,    -- 破晨号,深渊嗥叫
+  431333,    -- 破晨号,折磨射线
+  432520,    -- 破晨号,暗影屏障
+  449455,    -- 矶石宝库,咆哮恐惧
+  445207,    -- 矶石宝库,穿透哀嚎
+  429545,    -- 矶石宝库,噤声齿轮
+  429109,    -- 矶石宝库,愈合金属
+  430097,    -- 矶石宝库,融铁之水
+  256957,    -- 围攻伯拉勒斯,防水甲壳
+  454440,    -- 围攻伯拉勒斯,恶臭喷吐
+  272571,    -- 围攻伯拉勒斯,窒息之水
+  334748,    -- 通灵战潮,排干体液
+  320462,    -- 通灵战潮,通灵箭
+  324293,    -- 通灵战潮,刺耳尖啸
+  327127,    -- 通灵战潮,修复血肉
+  462802     -- 主机觉醒,净化烈焰
+}
+
+
+local function IsCastInterruptable()
+
+  -- 先判断目标，如果焦点存在，且焦点敌对，则目标是焦点。否则是目标，都没有则返回false
+  local T = nil
+  if UnitExists("focus") and UnitCanAttack("player", "focus") then
+    T = "focus"
+  elseif UnitExists("target") and UnitCanAttack("player", "target") then
+    T = "target"
+  else
+    return false
+  end
+
+  -- 心灵冰冻47528
+  -- 判断心灵冰冻是否可用
+  local spellCooldownInfo_47528 = C_Spell.GetSpellCooldown(47528)
+  if spellCooldownInfo_47528.duration > 0 then
+    return false
+  end
+  local inRange_47528  = C_Spell.IsSpellInRange(47528, T)
+  if inRange_47528 == false then
+    return false
+  end
+
+
+  -- 如果目标没在施法，则判断是否在通道读条，都不是返回false
+  local is_Channel = false
+  name, _, _, startTimeMs, endTimeMs, _, _, uninterruptible, T_spellId = UnitCastingInfo(T)
+  if T_spellId == nil then
+      name, _, _, startTimeMs, endTimeMs, _, uninterruptible, T_spellId, _, _ = UnitChannelInfo(T)
+      -- 如果目标没在施法，返回false
+      if T_spellId == nil then
+        return false
+      else
+        is_Channel = true
+      end
+    end
+
+  -- 施法无法被打断，则返回false
+  if uninterruptible then
+    return false
+  end
+
+  -- 后0.8秒再打断。
+  --if is_Channel then
+  --  if GetTime()*1000 -startTimeMs < 300 then
+  --    return false
+  --  end
+  --else
+  --  if endTimeMs - GetTime()*1000 > 800 then
+  --    return false
+  --  end
+  --end
+
+  -- 如果施法的spellId在白名单列表中，true
+  for _, v in ipairs(interrupt_priority_list) do
+    if v == T_spellId then
+      return true
+    end
+  end
+
+    return false
+end -- IsInterruptable
+
 
 
 function DoPixelRotation()
-   ----获取当前时间
-   -- local currentTime = GetTime()
-   --
-   -- -- 检查当前时间与上次执行时间的差异
-   -- if currentTime - lastExecutionTime < cooldown then
-   --     -- 如果差异小于0.2秒，直接返回，不执行函数
-   --     return
-   -- end
-   --
-   -- -- 更新上次执行时间
-   -- lastExecutionTime = currentTime
-
 
   -- 如果不在战斗，则stop
   if not UnitAffectingCombat("player") then
-    return SetFrameColorByTitle("空白")
+    return SetFrameColorByTitle("不在战斗")
   end
 
   -- 符文
@@ -276,9 +350,11 @@ function DoPixelRotation()
   -- 符文能量
   local runic_power = UnitPower("player", Enum.PowerType.RunicPower)
 
-  -- 近战有敌人
+  -- 骨盾层数
+  local aura_count_195181 = GetPlayerAuraCount(195181)
 
-  local any_enemies_in_range = AnyEnemiesInRange()
+  -- 近战有敌人
+  local enemies_in_range_count = EnemiesInRangeCount()
 
   -- 精髓分裂 195182
   local inRange_195182  = C_Spell.IsSpellInRange(195182, "target")
@@ -313,6 +389,13 @@ function DoPixelRotation()
   local aura_188290 = C_UnitAuras.GetPlayerAuraBySpellID(188290)
   -- 凋零CD
   local chargeInfo_43265 = C_Spell.GetSpellCharges(43265)
+
+  -- 如果有吸血鬼的55233 buff，
+  -- 吞噬 274156
+  local aura_55233 = C_UnitAuras.GetPlayerAuraBySpellID(55233)
+  local spellCooldownInfo_274156 = C_Spell.GetSpellCooldown(274156)
+
+
   ------------------------------------------------------------------
   ---------            基础覆盖                                     ----
   ------------------------------------------------------------------
@@ -324,13 +407,13 @@ function DoPixelRotation()
   --   如果 超出 精髓分裂 的距离， 且 死神的抚摩 CD好 ， 使用 死神的抚摩 195292
   --   否则 使用 精髓分裂  195182
   -- 且死亡触摸在CD，则死亡触摸。
-  if (GetPlayerAuraCount(195181) < 3) then
+  if aura_count_195181 < 3 then
 
-    if (spellCooldownInfo_195292.duration == 0) and (runes < 3) then
+    if (spellCooldownInfo_195292.duration < 1.5) and (runes < 3) then
       return SetFrameColorByTitle("死神的抚摩")
     end
 
-    if (spellCooldownInfo_195292.duration == 0) and (not inRange_195182) then
+    if (spellCooldownInfo_195292.duration < 1.5) and (not inRange_195182) then
       return SetFrameColorByTitle("死神的抚摩")
     end
 
@@ -338,15 +421,15 @@ function DoPixelRotation()
   end
 
 
-  -- 如果骨盾的CD小于8秒，符文>2个
+  -- 如果骨盾的CD小于4秒，符文>2个
   -- 则使用精髓分裂 195182。
   if aura_195181 then
     if (aura_195181.expirationTime - GetTime()) < 8 and runes > 2 then
-      if (spellCooldownInfo_195292.duration == 0) and (not inRange_195182) then
+      if (spellCooldownInfo_195292.duration < 1.5) and (not inRange_195182) then
         return SetFrameColorByTitle("死神的抚摩")
       end
 
-      return SetFrameColorByTitle("精髓分裂")
+      return SetFrameColorByTitle("精髓分裂-延续")
 
     end
   end
@@ -356,12 +439,7 @@ function DoPixelRotation()
   ------------------------------------------------------------------
 
 
-  -- 如果有能量，血量少于50%，释放灵打。
-  if runic_power > 40 then
-    if ( UnitHealth("player")/UnitHealthMax("player")) < 0.5 then
-      return SetFrameColorByTitle("灵界打击")
-    end
-  end
+
 
   -- 目标在释放以下技能，则低于80%血就灵打。
 
@@ -371,6 +449,20 @@ function DoPixelRotation()
         return SetFrameColorByTitle("灵界打击")
       end
     end
+  end
+
+
+  -- 如果有能量，血量少于50%，释放灵打。
+  if runic_power > 40 then
+    if ( UnitHealth("player")/UnitHealthMax("player")) < 0.5 then
+      return SetFrameColorByTitle("灵界打击")
+    end
+  end
+
+  -- IsChannelInterruptable和IsCastInterruptable()判断结果，进行打断
+
+  if IsCastInterruptable()  then
+    return SetFrameColorByTitle("心灵冰冻")
   end
 
 
@@ -384,12 +476,13 @@ function DoPixelRotation()
     return SetFrameColorByTitle("灵界打击")
   end
 
-  -- 如果近战范围敌人>3个，血沸有1层，则血液沸腾 50842。
-  --if are3EnemiesInRange() then
-    if (chargeInfo_50842.currentCharges >= 2) and inRange_195182 then
-      return SetFrameColorByTitle("血液沸腾")
-    end
-  --end
+  -- 如果血沸有2层。
+  -- 如果目标在近战
+  -- 则血液沸腾 50842。
+  if (chargeInfo_50842.currentCharges >= 2) and inRange_195182 then
+    return SetFrameColorByTitle("血液沸腾")
+  end
+
 
 
   -- 如果凋零有2层，且有赤色天灾buff，则释放凋零。
@@ -406,57 +499,72 @@ function DoPixelRotation()
 
   -- 如果目标生命值大于80%，且符文大于2个，使用死神印记在冷却 439843
   --if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
-    if (spellCooldownInfo_439843.duration == 0) and (runes > 2) then
+    if (spellCooldownInfo_439843.duration < 1.5) and (runes >= 2) then
       if C_Spell.IsSpellInRange(439843, "target") then
         return SetFrameColorByTitle("死神印记")
       end
     end
   --end
 
-
-  -- 如果目标生命值大于80%，吸血鬼在冷却，使用吸血鬼之血 55233
-
-  if ( UnitHealth("target")/UnitHealthMax("target")) > 0.8 then
-    if (spellCooldownInfo_55233.duration == 0)  then
-      if any_enemies_in_range then
-        return SetFrameColorByTitle("吸血鬼之血")
-      end
-    end
-  end
-
   -- 如果有吸血鬼的55233 buff，且吞噬在冷却，且符文小4个，则使用吞噬 274156
-  local aura_55233 = C_UnitAuras.GetPlayerAuraBySpellID(55233)
   if aura_55233 then
-    local spellCooldownInfo = C_Spell.GetSpellCooldown(274156)
-    if (spellCooldownInfo.duration == 0) and (runes < 4) then
-      if any_enemies_in_range then
+    if (spellCooldownInfo_274156.duration < 1.5)  then
+      if enemies_in_range_count >= 1 then
         return SetFrameColorByTitle("吞噬")
       end
     end
   end
 
+  -- 如果目标生命值大于80%，或者目标血量大于1Y，吸血鬼在冷却，使用吸血鬼之血 55233
+  local p1 =  ( UnitHealth("target")/UnitHealthMax("target")) > 0.8
+  local p2 = UnitHealth("target") > 100000000
+  if (p1 or p2) then
+    if (spellCooldownInfo_55233.duration == 0)  then
+      if enemies_in_range_count >= 1 then
+        return SetFrameColorByTitle("吸血鬼之血")
+      end
+    end
+  end
 
-  -- 如果身边有5个敌人，白骨风暴在冷却，骨盾有8层，则白骨风暴 194844
-  if are5EnemiesInRange() then
-    if (spellCooldownInfo_194844.duration == 0) and (GetPlayerAuraCount(195181) >= 8) then
-      return SetFrameColorByTitle("白骨风暴")
+
+  -- 如果身边有5个敌人
+  -- 目标血量大于2000万
+  -- 白骨风暴在冷却
+  -- 骨盾有8层，则白骨风暴 194844
+  if enemies_in_range_count >= 5 then
+    if  UnitHealth("target") > 20000000 then
+      if (spellCooldownInfo_194844.duration < 1.5) and (aura_count_195181 >= 8) then
+        return SetFrameColorByTitle("白骨风暴")
+      end
     end
   end
 
     -- 如果墓石219809在冷却，骨盾有8层，能量小于100，则墓石219809
-  if (spellCooldownInfo_219809.duration == 0) and (GetPlayerAuraCount(195181) >= 8) and (runic_power<100)then
+  if (spellCooldownInfo_219809.duration < 1.5) and (aura_count_195181 >= 8) and (runic_power<100)then
     return SetFrameColorByTitle("墓石")
   end
 
 
-  -- 如果白骨之盾少于10层，符文大于3个，则使用精髓分裂 195182
-  if (GetPlayerAuraCount(195181) < 10) and (runes >= 3) then
+  -- 如果白骨之盾少于8层，
+  -- 符文大于2个，
+  -- 目标血量小于大于2000万
+  -- 则使用精髓分裂 195182
+
+  if (GetPlayerAuraCount(195181) < 10) and (runes >= 2) and (UnitHealth("target") > 20000000) then
       return SetFrameColorByTitle("精髓分裂")
   end
 
-  -- 如果如果白骨之盾大于层，符文大于等于2个，则使用心脏打击206930。
-  if (GetPlayerAuraCount(195181) >= 10) and (runes >= 2) then
+  -- 如果符文大于等于2个，则使用心脏打击206930。
+  if (runes >= 2) then
       return SetFrameColorByTitle("心脏打击")
+  end
+
+
+  -- 如果血沸有1层。
+  -- 附近目标超过5个，
+  -- 则血液沸腾 50842。
+  if (chargeInfo_50842.currentCharges >= 1) and (enemies_in_range_count >= 5) then
+    return SetFrameColorByTitle("血液沸腾")
   end
 
   return SetFrameColorByTitle("空白")

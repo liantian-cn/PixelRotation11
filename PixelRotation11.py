@@ -37,9 +37,11 @@ while True:
         continue
     frame = dx_camera.get_latest_frame()
     img = Image.fromarray(frame)
-    pixel_color = img.getpixel((16, 16))
-
-    if pixel_color == (255, 255, 255):
+    pixel_color = img.getpixel((8, 16))
+    pixel_color2 = img.getpixel((24, 16))
+    if pixel_color != pixel_color2:
+        print("不在程序")
+    elif pixel_color == (255, 255, 255):
         print("闲置")
     elif pixel_color == (0, 0, 0):
         print("闲置")
@@ -76,4 +78,7 @@ while True:
     elif pixel_color == (255, 0, 255):
         print("枯萎凋零")
         pyautogui.press("subtract")
+    elif pixel_color == (255, 128, 0):
+        print("心灵冰冻")
+        pyautogui.press("multiply")
 
