@@ -31,7 +31,7 @@ keyboard.add_hotkey('alt+q', star_loop)
 keyboard.add_hotkey('alt+e', stop_loop)
 
 while True:
-    time.sleep(random.uniform(0.1, 0.3))
+    time.sleep(random.uniform(0.2, 0.3))
     if not continue_loop:
 
         continue

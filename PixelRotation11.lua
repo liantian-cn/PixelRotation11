@@ -68,6 +68,16 @@ local function SetFrameColorByTitle(title)
     text:SetText("不在战斗")
     return
   end
+    if (title == "坐骑上") then
+    f.tex:SetColorTexture(1, 1, 1, 1)
+    text:SetText("坐骑上")
+    return
+  end
+    if (title == "目标友方") then
+    f.tex:SetColorTexture(1, 1, 1, 1)
+    text:SetText("目标友方")
+    return
+  end
   --/script SetFrameColorByTitle("死神的抚摩")
   if (title == "死神的抚摩") then
     f.tex:SetColorTexture(0, 0, 0.5, 1)
@@ -326,6 +336,10 @@ local function IsCastInterruptable()
   --  end
   --end
 
+    if (GetTime()*1000 - startTimeMs) < 300 then
+      return false
+    end
+
   -- 如果施法的spellId在白名单列表中，true
   for _, v in ipairs(interrupt_priority_list) do
     if v == T_spellId then
@@ -340,10 +354,21 @@ end -- IsInterruptable
 
 function DoPixelRotation()
 
+    if UnitIsPlayer("target") then
+    return SetFrameColorByTitle("目标友方")
+  end
+
+    if IsMounted() then
+    return SetFrameColorByTitle("坐骑上")
+  end
   -- 如果不在战斗，则stop
   if not UnitAffectingCombat("player") then
     return SetFrameColorByTitle("不在战斗")
   end
+
+
+
+
 
   -- 符文
   local runes = getRuneCount()
